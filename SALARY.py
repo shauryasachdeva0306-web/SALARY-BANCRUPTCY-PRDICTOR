@@ -119,7 +119,12 @@ def load_model():
         model = pickle.load(f)
     with open(BASE_DIR / "columns.pkl", "rb") as f:
         raw_cols = pickle.load(f)
-    columns = [c.strip() for c in raw_cols]
+    # IMPORTANT: do NOT strip() these. The model was fit on a DataFrame whose
+    # column headers include the exact whitespace baked into columns.pkl
+    # (several names have a leading space, e.g. " Accounts Receivable
+    # Turnover"). Stripping here would make predict() see different column
+    # names than were seen at fit time and raise a feature-name mismatch.
+    columns = list(raw_cols)
     return model, columns
 
 
@@ -461,15 +466,20 @@ elif page == "Assess a Company":
 
     # ---- CSV upload ----
     with tab_csv:
-        st.write(f"Upload a CSV whose header row includes all {len(COLUMNS)} ratio names exactly as used in training. Only the first data row is scored.")
+        st.write(f"Upload a CSV whose header row includes all {len(COLUMNS)} ratio names (matched leniently — surrounding whitespace in your header is ignored). Only the first data row is scored.")
         uploaded = st.file_uploader("Choose a CSV file", type=["csv"])
         if uploaded is not None:
             try:
                 df = pd.read_csv(uploaded)
-                df.columns = [c.strip() for c in df.columns]
+                # Match headers to the model's exact column names ignoring
+                # surrounding whitespace, then rename back to the exact
+                # names the model was fit on (which may include a leading
+                # space) — never feed the model a whitespace-altered name.
+                stripped_to_exact = {c.strip(): c for c in COLUMNS}
+                df = df.rename(columns={c: stripped_to_exact[c.strip()] for c in df.columns if c.strip() in stripped_to_exact})
                 missing = [c for c in COLUMNS if c not in df.columns]
                 if missing:
-                    st.error(f"CSV is missing {len(missing)} required column(s), e.g. '{missing[0]}'.")
+                    st.error(f"CSV is missing {len(missing)} required column(s), e.g. '{missing[0].strip()}'.")
                 else:
                     row = df[COLUMNS].iloc[0].to_dict()
                     st.success("File loaded. Preview of the row being scored:")
