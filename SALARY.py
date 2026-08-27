@@ -244,11 +244,38 @@ FEATURE_GROUPS = {
     ],
 }
 
-# Sanity check: every model column must appear exactly once across groups.
-_flat = [c for grp in FEATURE_GROUPS.values() for c in grp]
-if sorted(_flat) != sorted(COLUMNS):
-    st.error("Feature group config is out of sync with columns.pkl — check FEATURE_GROUPS in app.py.")
-    st.stop()
+# ---------------------------------------------------------------------------
+# Self-heal FEATURE_GROUPS against whatever columns.pkl actually contains.
+# FEATURE_GROUPS is just a display/grouping hint — the model's real feature
+# list always comes from columns.pkl. Rather than crashing on any drift
+# between the two (e.g. after a retrain adds/renames a ratio), reconcile
+# automatically:
+#   - any hardcoded feature no longer present in columns.pkl is dropped
+#   - any column present in columns.pkl but missing from the groups is
+#     placed into an auto "Other / Ungrouped Ratios" bucket
+# This keeps the app running against any compatible model + columns.pkl
+# pair without manual edits to FEATURE_GROUPS.
+_col_set = set(COLUMNS)
+_seen = set()
+_reconciled = {}
+for _group, _feats in FEATURE_GROUPS.items():
+    _kept = [f for f in _feats if f in _col_set]
+    _seen.update(_kept)
+    if _kept:
+        _reconciled[_group] = _kept
+
+_unmatched = [c for c in COLUMNS if c not in _seen]
+if _unmatched:
+    _reconciled["Other / Ungrouped Ratios"] = _unmatched
+
+FEATURE_GROUPS = _reconciled
+
+if _unmatched:
+    st.sidebar.warning(
+        f"{len(_unmatched)} feature(s) from columns.pkl weren't in the hardcoded "
+        "grouping and were placed under 'Other / Ungrouped Ratios'.",
+        icon="⚠️",
+    )
 
 PRESETS = {
     "Healthy profile": {c: 0.55 for c in COLUMNS},
