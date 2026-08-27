@@ -37,35 +37,114 @@ st.markdown(
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
+    /* -----------------------------------------------------------------
+       Force the navy/gold palette globally, regardless of whether the
+       deployment picked up .streamlit/config.toml or fell back to
+       Streamlit's default light theme. Every rule below is explicit
+       about both background AND text color together, so text is never
+       left to inherit a color that no longer contrasts with its box.
+       ----------------------------------------------------------------- */
+    :root {
+        --sbp-bg: #0A1220;
+        --sbp-panel: #121F36;
+        --sbp-border: #22304A;
+        --sbp-text-hi: #F4F1E8;
+        --sbp-text-mid: #B7C0D1;
+        --sbp-text-low: #7C8AA0;
+        --sbp-gold: #C9A94A;
+    }
+
     html, body, [class*="css"]  { font-family: 'Inter', sans-serif; }
     h1, h2, h3 { font-family: 'Fraunces', Georgia, serif !important; letter-spacing: -0.01em; }
+
+    .stApp {
+        background: var(--sbp-bg) !important;
+        color: var(--sbp-text-hi) !important;
+    }
+    section[data-testid="stSidebar"] {
+        background: var(--sbp-panel) !important;
+        color: var(--sbp-text-hi) !important;
+    }
+    /* Generic text elements: headings, body copy, captions, labels */
+    .stApp p, .stApp span, .stApp label, .stApp li,
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4,
+    section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] label {
+        color: var(--sbp-text-hi) !important;
+    }
+    .stApp [data-testid="stCaptionContainer"] { color: var(--sbp-text-low) !important; }
+    .stApp [data-testid="stMarkdownContainer"] p { color: var(--sbp-text-mid) !important; }
+    .stApp h1, .stApp h2, .stApp h3 { color: var(--sbp-text-hi) !important; }
 
     .eyebrow {
         font-family: 'IBM Plex Mono', monospace;
         font-size: 12px;
         letter-spacing: 0.14em;
         text-transform: uppercase;
-        color: #C9A94A;
+        color: var(--sbp-gold) !important;
     }
     .mono { font-family: 'IBM Plex Mono', monospace; }
 
+    /* ---- st.metric boxes: explicit bg + explicit text colors together ---- */
     div[data-testid="stMetric"] {
-        background: #121F36;
-        border: 1px solid #22304A;
+        background: var(--sbp-panel) !important;
+        border: 1px solid var(--sbp-border);
         border-radius: 6px;
         padding: 14px 18px;
     }
-    div[data-testid="stMetricLabel"] { font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+    div[data-testid="stMetricLabel"],
+    div[data-testid="stMetricLabel"] > div,
+    div[data-testid="stMetricLabel"] p {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
+        color: var(--sbp-text-low) !important;
+    }
+    div[data-testid="stMetricValue"],
+    div[data-testid="stMetricValue"] > div {
+        color: var(--sbp-text-hi) !important;
+        font-family: 'Fraunces', Georgia, serif !important;
+    }
+
+    /* ---- buttons, radio, expanders, tabs: keep them legible on navy ---- */
+    .stButton > button, .stFormSubmitButton > button {
+        background: var(--sbp-gold) !important;
+        color: var(--sbp-bg) !important;
+        border: 1px solid var(--sbp-gold) !important;
+        font-family: 'IBM Plex Mono', monospace !important;
+        font-weight: 600 !important;
+    }
+    .stButton > button:hover, .stFormSubmitButton > button:hover {
+        background: #E4C877 !important;
+        border-color: #E4C877 !important;
+    }
+    div[data-testid="stExpander"] {
+        background: var(--sbp-panel) !important;
+        border: 1px solid var(--sbp-border) !important;
+        border-radius: 6px;
+    }
+    div[data-testid="stExpander"] summary, div[data-testid="stExpander"] summary * {
+        color: var(--sbp-text-hi) !important;
+    }
+    .stTabs [data-baseweb="tab"] { color: var(--sbp-text-mid) !important; }
+    .stTabs [aria-selected="true"] { color: var(--sbp-gold) !important; }
+    div[data-testid="stFileUploader"] { background: var(--sbp-panel) !important; border-radius: 6px; padding: 10px; }
+    div[data-testid="stFileUploader"] * { color: var(--sbp-text-mid) !important; }
+    .stNumberInput input, .stTextInput input {
+        background: var(--sbp-panel) !important;
+        color: var(--sbp-text-hi) !important;
+        border: 1px solid var(--sbp-border) !important;
+    }
+    div[data-testid="stDataFrame"] { background: var(--sbp-panel) !important; }
 
     .chip {
         display:inline-block;
         font-family: 'IBM Plex Mono', monospace;
         font-size: 12.5px;
-        border: 1px solid #22304A;
-        background: #121F36;
+        border: 1px solid var(--sbp-border);
+        background: var(--sbp-panel);
         padding: 6px 12px;
         border-radius: 999px;
-        color: #B7C0D1;
+        color: var(--sbp-text-mid) !important;
         margin: 3px 4px 3px 0;
     }
 
@@ -78,7 +157,7 @@ st.markdown(
         padding: 9px 18px;
         border-radius: 999px;
         background: #3A1E1B;
-        color: #E8897C;
+        color: #E8897C !important;
         border: 1px solid #C1483A;
     }
     .verdict-safe {
@@ -90,18 +169,18 @@ st.markdown(
         padding: 9px 18px;
         border-radius: 999px;
         background: #16261F;
-        color: #7FCBA8;
+        color: #7FCBA8 !important;
         border: 1px solid #3C8368;
     }
 
     .disclaimer-box {
         margin-top: 18px;
         padding: 16px 20px;
-        border-left: 2px solid #C9A94A;
-        background: #121F36;
+        border-left: 2px solid var(--sbp-gold);
+        background: var(--sbp-panel);
         font-family: 'IBM Plex Mono', monospace;
         font-size: 12.5px;
-        color: #7C8AA0;
+        color: var(--sbp-text-low) !important;
         line-height: 1.6;
         border-radius: 0 6px 6px 0;
     }
