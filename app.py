@@ -151,6 +151,7 @@ FEATURE_GROUPS = {
         " Operating profit/Paid-in capital",
         " Net profit before tax/Paid-in capital",
         " Interest-bearing debt interest rate",
+        " Retained Earnings to Total Assets",
     ],
     "Per-Share Metrics": [
         " Net Value Per Share (B)",
@@ -194,6 +195,7 @@ FEATURE_GROUPS = {
         " Contingent liabilities/Net worth",
         " Interest Expense Ratio",
         " Current Liabilities/Liability",
+        " Current Liability to Liability",
         " Working Capital/Equity",
         " Current Liabilities/Equity",
         " Long-term Liability to Current Assets",
